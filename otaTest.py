@@ -57,8 +57,14 @@ def get_bytes_from_file(filename):
     print("Reading from: ", filename)
     return open(filename, "rb").read()
 
-async def start_ota(ble_address: str, file_name: str):
-    device = await BleakScanner.find_device_by_address(ble_address, timeout=20.0)
+async def start_ota():
+    devices = await BleakScanner.discover()
+    for d in devices:
+        if d.name == "InFlow":
+            print("Connecting to InFlow")
+            device = d
+
+    #device = await BleakScanner.find_device_by_address(ble_address, timeout=20.0)
     disconnected_event = asyncio.Event()
 
     def handle_disconnect(_: BleakClient):
@@ -138,7 +144,7 @@ async def start_ota(ble_address: str, file_name: str):
         #await send_data(client, bytearray([0xFD]), False)
         
         global fileBytes
-        fileBytes = get_bytes_from_file(file_name)
+        fileBytes = get_bytes_from_file("firmware.bin")
         global clt
         clt = client
         fileParts = math.ceil(len(fileBytes) / PART)
@@ -154,7 +160,7 @@ async def start_ota(ble_address: str, file_name: str):
         for x in range(0, fileParts):
             await send_part(x, fileBytes, clt)
         
-        print("END")
+        print("All data sent")
         while end:
             await asyncio.sleep(1.0)
         print("Waiting for disconnect... ", end="")
@@ -202,15 +208,5 @@ def isValidAddress(str):
 
 if __name__ == "__main__":
     print(header)
-    if (len(sys.argv) > 2):
-        print("Trying to start OTA update")
-        if isValidAddress(sys.argv[1]) and path.exists(sys.argv[2]):
-            asyncio.run(start_ota(sys.argv[1], sys.argv[2]))
-        else:
-            if not isValidAddress(sys.argv[1]):
-                print("Invalid Address: ", sys.argv[1])
-            if not path.exists(sys.argv[2]):
-                print("File not found: ", sys.argv[2])
-    else:
-        print("Specify the device address and firmware file")
-        print(">python ota.py \"01:23:45:67:89:ab\" \"firmware.bin\"")
+    print("Trying to start OTA update")
+    asyncio.run(start_ota())
