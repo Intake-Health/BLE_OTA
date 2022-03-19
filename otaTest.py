@@ -52,17 +52,20 @@ clt = None
 fileBytes = None
 total = 0
 sent = 0
+#device = None
 
 def get_bytes_from_file(filename):
     print("Reading from: ", filename)
     return open(filename, "rb").read()
 
 async def start_ota():
-    devices = await BleakScanner.discover()
-    for d in devices:
-        if d.name == "InFlow":
-            print("Connecting to InFlow")
-            device = d
+    device = None
+    while device == None:
+        devices = await BleakScanner.discover()
+        for d in devices:       
+            if d.name == "InFlow":
+                print("Connecting to InFlow")
+                device = d
 
     #device = await BleakScanner.find_device_by_address(ble_address, timeout=20.0)
     disconnected_event = asyncio.Event()
