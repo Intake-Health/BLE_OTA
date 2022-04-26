@@ -1,5 +1,5 @@
-# BLE_OTA
-Takes in BLE address and bin file path as arguments. 
+BT classic OTA was only tested in Ubuntu. 
 
-example command to run:
-python otaTest.py "4C:75:25:A4:F0:9E" "test.bin"
+BT classic script must be run with python3
+
+If errors occur, try running: "pip3 install bluepy pybluez"
